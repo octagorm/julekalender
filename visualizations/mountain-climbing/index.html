@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fjellklatring - Julekalender</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark: #141413;
+            --light: #faf9f5;
+            --mid-gray: #b0aea5;
+            --light-gray: #e8e6dc;
+            --orange: #d97757;
+            --blue: #6a9bcc;
+            --green: #788c5d;
+            --red: #c85450;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #f5f3ee 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 20, 19, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar h1 {
+            font-family: 'Lora', serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .sidebar .subtitle {
+            color: var(--mid-gray);
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .control-section {
+            margin-bottom: 32px;
+        }
+
+        .control-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-section h3::before {
+            content: '⛰️';
+            font-weight: bold;
+        }
+
+        .seed-input {
+            width: 100%;
+            background: var(--light);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--light-gray);
+            text-align: center;
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: var(--orange);
+            box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.1);
+            background: white;
+        }
+
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--light-gray);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--orange);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #c86641;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--orange);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--mid-gray);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .button {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .button:hover {
+            background: #c86641;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: var(--blue);
+        }
+
+        .button.secondary:hover {
+            background: #5a8bb8;
+        }
+
+        .button.tertiary {
+            background: var(--green);
+        }
+
+        .button.tertiary:hover {
+            background: #6b7b52;
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        #canvas-container {
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(20, 20, 19, 0.1);
+            background: white;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--mid-gray);
+            padding: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>⛰️ Fjellklatring</h1>
+            <div class="subtitle">Klatrekonkurranse til toppen</div>
+
+            <div class="control-section">
+                <h3>Frø</h3>
+                <input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button secondary" onclick="previousSeed()">← Forrige</button>
+                    <button class="button secondary" onclick="nextSeed()">Neste →</button>
+                </div>
+                <button class="button tertiary" style="margin-bottom: 0;" onclick="randomSeedAndUpdate()">↻ Tilfeldig</button>
+            </div>
+
+            <div class="control-section">
+                <h3>Parametere</h3>
+
+                <div class="control-group">
+                    <label>Animasjonshastighet</label>
+                    <div class="slider-container">
+                        <input type="range" id="animSpeed" min="0.5" max="3.0" step="0.1" value="1.0" oninput="updateParam('animSpeed', this.value)">
+                        <span class="value-display" id="animSpeed-value">1.0x</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Vanskelighetsgrad</label>
+                    <div class="slider-container">
+                        <input type="range" id="difficulty" min="1" max="10" step="1" value="5" oninput="updateParam('difficulty', this.value)">
+                        <span class="value-display" id="difficulty-value">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Handlinger</h3>
+                <button class="button" onclick="restartAnimation()">↻ Start på nytt</button>
+                <div style="margin-top: 16px; padding: 12px; background: var(--light); border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--mid-gray); margin-bottom: 4px;">Klatrere:</div>
+                    <div id="participant-count" style="font-family: 'Courier New', monospace; font-size: 14px; color: var(--dark);">Laster...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">Forbereder klatring...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 12345,
+            animSpeed: 1.0,
+            difficulty: 5
+        };
+
+        let defaultParams = {...params};
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let names = [];
+        let setupComplete = false;
+        let winner = null;
+        let climbers = [];
+        let phase = 'intro';
+        let phaseStartTime = 0;
+        let animationStartTime = 0;
+
+        const COLORS = [
+            '#d97757', '#6a9bcc', '#788c5d', '#c85450',
+            '#9b7fc8', '#c8a150', '#50c878', '#c85091'
+        ];
+
+        const MOUNTAIN_HEIGHT = 700;
+        const LANE_WIDTH = 80;
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // NAME LOADING (Standard Electron pattern)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function loadNames() {
+            if (window.JULEKALENDER_NAMES && window.JULEKALENDER_NAMES.length > 0) {
+                names = window.JULEKALENDER_NAMES;
+            } else {
+                // Fallback for standalone browser testing
+                const FALLBACK_NAMES = `Alice
+Bob
+Charlie
+Diana
+Erik
+Frank
+Grace
+Henry`;
+                names = FALLBACK_NAMES
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line && !line.startsWith('#'));
+            }
+
+            document.getElementById('participant-count').textContent =
+                `${names.length} klatrer${names.length !== 1 ? 'e' : ''}`;
+
+            return names;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // P5.JS SETUP
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function setup() {
+            let canvas = createCanvas(1200, 900);
+            canvas.parent('canvas-container');
+
+            // Check if names already available
+            if (window.JULEKALENDER_NAMES && window.JULEKALENDER_NAMES.length > 0) {
+                initializeWithNames();
+            }
+            // Otherwise wait for event
+        }
+
+        // Listen for Electron name injection event
+        window.addEventListener('julekalender-names-loaded', (event) => {
+            if (!setupComplete) {
+                initializeWithNames();
+            }
+        });
+
+        function initializeWithNames() {
+            if (setupComplete) return;
+
+            loadNames();
+
+            if (names.length === 0) {
+                console.error('No names loaded!');
+                return;
+            }
+
+            initializeAnimation();
+            document.querySelector('.loading').style.display = 'none';
+            setupComplete = true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // CLIMBER CLASS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        class Climber {
+            constructor(name, index, total) {
+                this.name = name;
+                this.color = COLORS[index % COLORS.length];
+
+                // Position in lanes
+                const totalWidth = total * LANE_WIDTH;
+                const startX = (width - totalWidth) / 2 + index * LANE_WIDTH + LANE_WIDTH/2;
+                this.x = startX;
+                this.y = height - 50; // Start at bottom
+
+                // Climbing attributes
+                this.targetY = this.y;
+                this.speed = random(1, 2); // Base climbing speed
+                this.stamina = random(0.8, 1.2);
+                this.isWinner = false;
+                this.finished = false;
+                this.finishTime = 0;
+
+                // Animation
+                this.wobble = random(TWO_PI);
+                this.scale = 1.0;
+            }
+
+            update(deltaTime) {
+                if (this.finished) return;
+
+                // Adjust speed based on difficulty
+                const difficultyFactor = 1 / (params.difficulty * 0.1 + 0.5);
+                const adjustedSpeed = this.speed * this.stamina * difficultyFactor * params.animSpeed;
+
+                // Random events (slips, boosts)
+                if (random() < 0.002 * params.difficulty) {
+                    this.targetY += random(5, 15); // Slip down
+                }
+                if (random() < 0.001) {
+                    this.targetY -= random(10, 20); // Power boost
+                }
+
+                // Climb upward
+                this.targetY -= adjustedSpeed * deltaTime / 16.67;
+
+                // Smooth movement
+                this.y = lerp(this.y, this.targetY, 0.2);
+
+                // Wobble animation
+                this.wobble += 0.1;
+
+                // Check if reached summit
+                const summitY = height - MOUNTAIN_HEIGHT + 50;
+                if (this.y <= summitY) {
+                    this.finished = true;
+                    this.finishTime = millis();
+                    this.y = summitY;
+                }
+            }
+
+            draw() {
+                push();
+                translate(this.x, this.y);
+
+                // Wobble while climbing
+                if (!this.finished) {
+                    rotate(sin(this.wobble) * 0.05);
+                }
+
+                // Winner glow
+                if (this.isWinner) {
+                    fill(255, 200, 0, 100);
+                    noStroke();
+                    circle(0, 0, 60);
+                }
+
+                // Climber body
+                fill(this.color);
+                stroke(0, 200);
+                strokeWeight(2);
+                circle(0, 0, 40);
+
+                // Simple face
+                fill(255);
+                noStroke();
+                circle(-8, -5, 8);
+                circle(8, -5, 8);
+                fill(0);
+                circle(-8, -5, 4);
+                circle(8, -5, 4);
+
+                // Name label
+                fill(0);
+                noStroke();
+                textAlign(CENTER, CENTER);
+                textSize(12);
+                textStyle(BOLD);
+                text(this.name, 0, 30);
+
+                // Winner crown
+                if (this.isWinner) {
+                    textSize(24);
+                    text('👑', 0, -40);
+                }
+
+                pop();
+            }
+
+            getProgress() {
+                const summitY = height - MOUNTAIN_HEIGHT + 50;
+                const startY = height - 50;
+                return constrain(map(this.y, startY, summitY, 0, 1), 0, 1);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ANIMATION
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function initializeAnimation() {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+
+            // Pre-select winner
+            winner = random(names);
+            console.log(`Winner pre-selected: ${winner} (seed: ${params.seed})`);
+
+            // Create climbers
+            climbers = [];
+            names.forEach((name, i) => {
+                const climber = new Climber(name, i, names.length);
+                // Give winner a slight edge
+                if (name === winner) {
+                    climber.speed *= 1.15;
+                    climber.stamina *= 1.1;
+                }
+                climbers.push(climber);
+            });
+
+            phase = 'intro';
+            phaseStartTime = millis();
+            animationStartTime = millis();
+
+            background(135, 206, 235); // Sky blue
+        }
+
+        function draw() {
+            const elapsed = (millis() - animationStartTime) / params.animSpeed;
+            const dt = deltaTime || 16.67;
+
+            // Sky gradient background
+            drawSky();
+
+            // Mountain
+            drawMountain();
+
+            // Update and draw climbers
+            climbers.forEach(c => {
+                c.update(dt);
+                c.draw();
+            });
+
+            // Phase management
+            if (phase === 'intro') {
+                if (elapsed > 3000) {
+                    phase = 'climbing';
+                    phaseStartTime = millis();
+                }
+                drawPhaseText('KLAR... FERDIG... GÅ!');
+            }
+            else if (phase === 'climbing') {
+                // Check if anyone finished
+                const finished = climbers.filter(c => c.finished);
+                if (finished.length > 0) {
+                    phase = 'finish';
+                    phaseStartTime = millis();
+
+                    // Mark winner
+                    finished.forEach(c => {
+                        if (c.name === winner) {
+                            c.isWinner = true;
+                        }
+                    });
+                }
+
+                drawProgress();
+            }
+            else if (phase === 'finish') {
+                const finishElapsed = millis() - phaseStartTime;
+
+                // Confetti
+                for (let i = 0; i < 2; i++) {
+                    const px = random(width);
+                    const py = random(height * 0.3);
+                    fill(random(COLORS));
+                    noStroke();
+                    circle(px, py, random(5, 15));
+                }
+
+                const winnerClimber = climbers.find(c => c.name === winner);
+                if (winnerClimber) {
+                    drawPhaseText(`🎉 ${winnerClimber.name} VANT! 🎉`, 32);
+                }
+
+                if (finishElapsed > 5000) {
+                    noLoop();
+                }
+            }
+
+            // Status
+            drawStatus();
+        }
+
+        function drawSky() {
+            // Gradient sky
+            for (let y = 0; y < height; y++) {
+                const inter = map(y, 0, height, 0, 1);
+                const c = lerpColor(color(135, 206, 235), color(255, 250, 240), inter);
+                stroke(c);
+                line(0, y, width, y);
+            }
+        }
+
+        function drawMountain() {
+            push();
+
+            // Mountain path/cliff
+            fill(120, 100, 80);
+            noStroke();
+
+            const summitY = height - MOUNTAIN_HEIGHT;
+            const baseY = height;
+
+            beginShape();
+            vertex(0, baseY);
+            vertex(width * 0.2, summitY);
+            vertex(width * 0.8, summitY);
+            vertex(width, baseY);
+            endShape(CLOSE);
+
+            // Peak line
+            stroke(100, 80, 60);
+            strokeWeight(3);
+            line(width * 0.2, summitY, width * 0.8, summitY);
+
+            // Summit flag
+            fill(255, 0, 0);
+            noStroke();
+            triangle(width/2, summitY - 40, width/2, summitY - 20, width/2 + 20, summitY - 30);
+            stroke(100);
+            strokeWeight(2);
+            line(width/2, summitY, width/2, summitY - 40);
+
+            pop();
+        }
+
+        function drawProgress() {
+            push();
+            fill(255, 255, 255, 200);
+            noStroke();
+            rect(width - 220, 10, 210, climbers.length * 25 + 20, 8);
+
+            fill(0);
+            textAlign(LEFT, TOP);
+            textSize(12);
+
+            climbers.forEach((c, i) => {
+                const progress = c.getProgress();
+                const y = 20 + i * 25;
+
+                // Name
+                text(c.name, width - 210, y);
+
+                // Progress bar
+                fill(200);
+                rect(width - 110, y, 90, 15, 3);
+                fill(c.color);
+                rect(width - 110, y, 90 * progress, 15, 3);
+            });
+
+            pop();
+        }
+
+        function drawPhaseText(txt, size = 24) {
+            push();
+            fill(0, 180);
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textSize(size);
+            textStyle(BOLD);
+            text(txt, width/2, 50);
+            pop();
+        }
+
+        function drawStatus() {
+            push();
+            fill(255, 255, 255, 200);
+            noStroke();
+            rect(10, height - 60, 200, 50, 8);
+
+            fill(0);
+            textAlign(LEFT, CENTER);
+            textSize(12);
+            const finished = climbers.filter(c => c.finished).length;
+            text(`Fullført: ${finished}/${climbers.length}`, 20, height - 35);
+            pop();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI CONTROLS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(`${paramName}-value`).textContent =
+                paramName === 'animSpeed' ? `${value}x` : value;
+        }
+
+        function restartAnimation() {
+            initializeAnimation();
+            loop();
+        }
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                restartAnimation();
+            } else {
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+        });
+    </script>
+</body>
+</html>

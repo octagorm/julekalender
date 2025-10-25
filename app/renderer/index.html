@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julekalender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎄 Julekalender</h1>
+            <p class="subtitle">Daglig vinnertrekning</p>
+        </header>
+
+        <!-- Names Section -->
+        <section class="section names-section">
+            <div class="section-header">
+                <h2>📝 Deltakere</h2>
+                <button class="button secondary" id="add-participant-btn">+ Legg til</button>
+            </div>
+
+            <!-- Add participant form (hidden by default) -->
+            <div class="add-participant-form" id="add-participant-form" style="display: none;">
+                <input type="text" id="new-participant-name" placeholder="Navn..." class="participant-input">
+                <div class="button-row">
+                    <button class="button" id="save-participant-btn">Lagre</button>
+                    <button class="button secondary" id="cancel-participant-btn">Avbryt</button>
+                </div>
+            </div>
+
+            <div class="participants-list" id="participants-list">
+                <div class="loading">Laster deltakere...</div>
+            </div>
+
+            <div class="names-count" id="names-count">
+                <span class="count-number">0</span> aktive av <span class="count-total">0</span> deltakere
+            </div>
+        </section>
+
+        <!-- Visualizations Section -->
+        <section class="section viz-section">
+            <div class="section-header">
+                <h2>🎮 Visualiseringer</h2>
+            </div>
+
+            <div class="viz-grid" id="viz-grid">
+                <div class="loading">Finner visualiseringer...</div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/launcher.js"></script>
+</body>
+</html>

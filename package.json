@@ -1,0 +1,61 @@
+{
+  "name": "julekalender",
+  "version": "1.0.0",
+  "description": "An entertaining way to randomly select daily winners for our workplace Christmas calendar gift exchange.",
+  "main": "app/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux"
+  },
+  "keywords": [
+    "julekalender",
+    "randomizer",
+    "christmas",
+    "advent"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^38.4.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.julekalender.app",
+    "productName": "Julekalender",
+    "files": [
+      "app/**/*",
+      "visualizations/**/*",
+      "names.txt"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-store": "^11.0.2"
+  }
+}

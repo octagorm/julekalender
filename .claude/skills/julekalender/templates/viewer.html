@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<!--
+    JULEKALENDER VISUALIZATION TEMPLATE
+
+    WHAT TO KEEP:
+    ✓ Overall structure (header, sidebar, main content)
+    ✓ Styling (colors, fonts, layout)
+    ✓ Seed navigation section (useful for testing different outcomes!)
+    ✓ Name loading logic
+    ✓ Self-contained artifact (everything inline)
+
+    WHAT TO CUSTOMIZE:
+    ✗ The animation algorithm (implement YOUR visualization concept)
+    ✗ The parameters (define what YOUR animation needs - speeds, colors, etc.)
+    ✗ The UI controls (match YOUR parameters)
+    ✗ Winner reveal logic (adapt to your animation style)
+
+    Let your creative vision guide the implementation!
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julekalender - Winner Randomizer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark: #141413;
+            --light: #faf9f5;
+            --mid-gray: #b0aea5;
+            --light-gray: #e8e6dc;
+            --orange: #d97757;
+            --blue: #6a9bcc;
+            --green: #788c5d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #f5f3ee 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 20, 19, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar h1 {
+            font-family: 'Lora', serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .sidebar .subtitle {
+            color: var(--mid-gray);
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        /* Control Sections */
+        .control-section {
+            margin-bottom: 32px;
+        }
+
+        .control-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-section h3::before {
+            content: '•';
+            color: var(--orange);
+            font-weight: bold;
+        }
+
+        /* Seed Controls */
+        .seed-input {
+            width: 100%;
+            background: var(--light);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--light-gray);
+            text-align: center;
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: var(--orange);
+            box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.1);
+            background: white;
+        }
+
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .regen-button {
+            margin-bottom: 0;
+        }
+
+        /* Parameter Controls */
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--light-gray);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--orange);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #c86641;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--orange);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--mid-gray);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Buttons */
+        .button {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .button:hover {
+            background: #c86641;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: var(--blue);
+        }
+
+        .button.secondary:hover {
+            background: #5a8bb8;
+        }
+
+        .button.tertiary {
+            background: var(--green);
+        }
+
+        .button.tertiary:hover {
+            background: #6b7b52;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row .button {
+            flex: 1;
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        #canvas-container {
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(20, 20, 19, 0.1);
+            background: white;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--mid-gray);
+            padding: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Control Sidebar -->
+        <div class="sidebar">
+            <!-- Headers (CUSTOMIZE THIS) -->
+            <h1>Visualization Name</h1>
+            <div class="subtitle">Daily winner randomizer</div>
+
+            <!-- Seed Section (KEEP - useful for testing!) -->
+            <div class="control-section">
+                <h3>Seed</h3>
+                <input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button secondary" onclick="previousSeed()">← Prev</button>
+                    <button class="button secondary" onclick="nextSeed()">Next →</button>
+                </div>
+                <button class="button tertiary regen-button" onclick="randomSeedAndUpdate()">↻ Random</button>
+            </div>
+
+            <!-- Parameters Section (CUSTOMIZE FOR YOUR ANIMATION) -->
+            <div class="control-section">
+                <h3>Parameters</h3>
+
+                <!-- Example: Animation Speed -->
+                <div class="control-group">
+                    <label>Animation Speed</label>
+                    <div class="slider-container">
+                        <input type="range" id="animSpeed" min="0.5" max="3.0" step="0.1" value="1.0" oninput="updateParam('animSpeed', this.value)">
+                        <span class="value-display" id="animSpeed-value">1.0x</span>
+                    </div>
+                </div>
+
+                <!-- Add more parameters as needed for your visualization -->
+            </div>
+
+            <!-- Actions Section (KEEP THIS) -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <button class="button" onclick="restartAnimation()">↻ Restart</button>
+                <div style="margin-top: 16px; padding: 12px; background: var(--light); border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--mid-gray); margin-bottom: 4px;">Participants:</div>
+                    <div id="participant-count" style="font-family: 'Courier New', monospace; font-size: 14px; color: var(--dark);">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">Loading participants...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // PARAMETERS - CUSTOMIZE FOR YOUR ANIMATION
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 12345,
+            animSpeed: 1.0,
+            // Add more parameters here
+        };
+
+        let defaultParams = {...params};
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // NAME LOADING - KEEP THIS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let names = [];
+        let winner = null;
+
+        async function loadNames() {
+            try {
+                const response = await fetch('../../names.txt');
+                const text = await response.text();
+
+                names = text
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line && !line.startsWith('#'));
+
+                // Update participant count display
+                document.getElementById('participant-count').textContent =
+                    `${names.length} active participant${names.length !== 1 ? 's' : ''}`;
+
+                return names;
+            } catch (error) {
+                console.error('Error loading names:', error);
+                document.getElementById('participant-count').textContent = 'Error loading names.txt';
+                return [];
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ANIMATION ALGORITHM - REPLACE WITH YOUR VISUALIZATION
+        // ═══════════════════════════════════════════════════════════════════════
+
+        async function setup() {
+            let canvas = createCanvas(1200, 900);
+            canvas.parent('canvas-container');
+
+            // Load names first
+            await loadNames();
+
+            if (names.length === 0) {
+                console.error('No names loaded!');
+                return;
+            }
+
+            // Initialize animation
+            initializeAnimation();
+
+            // Remove loading message
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function initializeAnimation() {
+            // Seed the randomness for reproducibility
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+
+            // Pre-select winner (fair random selection)
+            winner = random(names);
+
+            console.log(`Winner pre-selected: ${winner} (seed: ${params.seed})`);
+
+            // TODO: Initialize your visualization here
+            // - Set up animation state
+            // - Position elements
+            // - Prepare for draw loop
+
+            background(250, 249, 245);
+
+            // Example placeholder visualization
+            textAlign(CENTER, CENTER);
+            textSize(32);
+            fill(20);
+            text('Replace this with your animation!', width/2, height/2 - 40);
+
+            textSize(16);
+            fill(100);
+            text(`${names.length} participants`, width/2, height/2 + 20);
+            text(`Winner: ${winner}`, width/2, height/2 + 50);
+        }
+
+        function draw() {
+            // TODO: Implement your animation loop here
+            //
+            // Suggested structure:
+            // - Check elapsed time (millis())
+            // - Update animation based on phase (intro/build/climax/reveal)
+            // - Draw current frame
+            // - Stop when winner is revealed
+
+            // Example timing structure:
+            // const elapsed = millis();
+            // if (elapsed < 5000) {
+            //     // INTRO: Show all names
+            // } else if (elapsed < 45000) {
+            //     // BUILD: Main animation
+            // } else if (elapsed < 55000) {
+            //     // CLIMAX: Narrow to finalists
+            // } else {
+            //     // REVEAL: Show winner
+            //     noLoop(); // Stop animation
+            // }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI CONTROL HANDLERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(`${paramName}-value`).textContent =
+                paramName === 'animSpeed' ? `${value}x` : value;
+
+            // Optionally restart animation when params change
+            // initializeAnimation();
+        }
+
+        function restartAnimation() {
+            initializeAnimation();
+            loop(); // Resume draw loop if stopped
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SEED CONTROL FUNCTIONS - KEEP THESE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                restartAnimation();
+            } else {
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+        });
+    </script>
+</body>
+</html>

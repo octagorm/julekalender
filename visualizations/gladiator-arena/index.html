@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gladiator Arena - Julekalender</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark: #141413;
+            --light: #faf9f5;
+            --mid-gray: #b0aea5;
+            --light-gray: #e8e6dc;
+            --orange: #d97757;
+            --blue: #6a9bcc;
+            --green: #788c5d;
+            --red: #c85450;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #f5f3ee 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 20, 19, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar h1 {
+            font-family: 'Lora', serif;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .sidebar .subtitle {
+            color: var(--mid-gray);
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .control-section {
+            margin-bottom: 32px;
+        }
+
+        .control-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-section h3::before {
+            content: '⚔';
+            font-weight: bold;
+        }
+
+        .seed-input {
+            width: 100%;
+            background: var(--light);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--light-gray);
+            text-align: center;
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: var(--orange);
+            box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.1);
+            background: white;
+        }
+
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--light-gray);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--orange);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #c86641;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--orange);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--mid-gray);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .button {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .button:hover {
+            background: #c86641;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: var(--blue);
+        }
+
+        .button.secondary:hover {
+            background: #5a8bb8;
+        }
+
+        .button.tertiary {
+            background: var(--green);
+        }
+
+        .button.tertiary:hover {
+            background: #6b7b52;
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        #canvas-container {
+            width: 100%;
+            max-width: 1200px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(20, 20, 19, 0.1);
+            background: white;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--mid-gray);
+            padding: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>⚔️ Gladiatorarena</h1>
+            <div class="subtitle">Kamp til døden</div>
+
+            <div class="control-section">
+                <h3>Frø</h3>
+                <input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button secondary" onclick="previousSeed()">← Forrige</button>
+                    <button class="button secondary" onclick="nextSeed()">Neste →</button>
+                </div>
+                <button class="button tertiary" style="margin-bottom: 0;" onclick="randomSeedAndUpdate()">↻ Tilfeldig</button>
+            </div>
+
+            <div class="control-section">
+                <h3>Parametere</h3>
+
+                <div class="control-group">
+                    <label>Animasjonshastighet</label>
+                    <div class="slider-container">
+                        <input type="range" id="animSpeed" min="0.5" max="3.0" step="0.1" value="1.0" oninput="updateParam('animSpeed', this.value)">
+                        <span class="value-display" id="animSpeed-value">1.0x</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Kampintensitet</label>
+                    <div class="slider-container">
+                        <input type="range" id="intensity" min="1" max="10" step="1" value="5" oninput="updateParam('intensity', this.value)">
+                        <span class="value-display" id="intensity-value">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Handlinger</h3>
+                <button class="button" onclick="restartAnimation()">↻ Start på nytt</button>
+                <div style="margin-top: 16px; padding: 12px; background: var(--light); border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--mid-gray); margin-bottom: 4px;">Gladiatorer:</div>
+                    <div id="participant-count" style="font-family: 'Courier New', monospace; font-size: 14px; color: var(--dark);">Laster...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">Innkaller gladiatorer...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // ANIMATION STATE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 12345,
+            animSpeed: 1.0,
+            intensity: 5
+        };
+
+        let defaultParams = {...params};
+        let names = [];
+        let winner = null;
+        let gladiators = [];
+        let eliminated = [];
+        let currentFight = null;
+        let phase = 'intro';
+        let phaseStartTime = 0;
+        let animationStartTime = 0;
+        let namesLoaded = false;
+
+        const COLORS = [
+            '#d97757', '#6a9bcc', '#788c5d', '#c85450',
+            '#9b7fc8', '#c8a150', '#50c878', '#c85091'
+        ];
+
+        // Load names from Electron app or fallback to inline data
+        function loadNames() {
+            // Check if running in Electron with injected names
+            if (window.JULEKALENDER_NAMES && window.JULEKALENDER_NAMES.length > 0) {
+                names = window.JULEKALENDER_NAMES;
+            } else {
+                // Fallback for standalone browser testing
+                const FALLBACK_NAMES = `Alice
+Bob
+Charlie
+Diana
+Erik
+Frank
+Grace
+Henry
+Iris
+Jack
+Karen
+Leo
+Mike
+Nina
+Oscar`;
+                names = FALLBACK_NAMES
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line && !line.startsWith('#'));
+            }
+
+            // Update participant count display
+            const participantCount = document.getElementById('participant-count');
+            if (participantCount) {
+                participantCount.textContent = `${names.length} gladiator${names.length !== 1 ? 'er' : ''}`;
+            }
+
+            namesLoaded = true;
+            return names;
+        }
+
+        class Gladiator {
+            constructor(name, index, total) {
+                this.name = name;
+                this.health = 100;
+                this.maxHealth = 100;
+                this.color = COLORS[index % COLORS.length];
+                this.isEliminated = false;
+                this.isWinner = false;
+
+                // Position in circular arena
+                const angle = (index / total) * TWO_PI;
+                const radius = min(width, height) * 0.35;
+                this.x = width/2 + cos(angle) * radius;
+                this.y = height/2 + sin(angle) * radius;
+                this.homeX = this.x;
+                this.homeY = this.y;
+
+                // Combat stats
+                this.attackPower = random(15, 25);
+                this.defense = random(0.7, 0.95);
+
+                // Animation
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.scale = 1.0;
+                this.alpha = 255;
+            }
+
+            update() {
+                // Smooth movement
+                this.x = lerp(this.x, this.targetX, 0.1);
+                this.y = lerp(this.y, this.targetY, 0.1);
+            }
+
+            draw() {
+                if (this.isEliminated && this.alpha <= 0) return;
+
+                push();
+                translate(this.x, this.y);
+
+                // Pulsing effect for active fighters
+                if (currentFight && (currentFight.attacker === this || currentFight.defender === this)) {
+                    this.scale = lerp(this.scale, 1.2, 0.1);
+                } else {
+                    this.scale = lerp(this.scale, 1.0, 0.1);
+                }
+
+                scale(this.scale);
+
+                // Glow effect
+                if (!this.isEliminated) {
+                    fill(red(this.color), green(this.color), blue(this.color), 50);
+                    noStroke();
+                    circle(0, 0, 70);
+                }
+
+                // Gladiator body
+                fill(this.color);
+                stroke(0, this.alpha);
+                strokeWeight(2);
+                circle(0, 0, 50);
+
+                // Shield/helmet
+                fill(255, this.alpha * 0.8);
+                arc(0, 0, 50, 50, PI, TWO_PI);
+
+                // Health bar
+                if (!this.isEliminated) {
+                    const barWidth = 60;
+                    const barHeight = 6;
+                    const healthPercent = this.health / this.maxHealth;
+
+                    // Background
+                    fill(200, 200, 200);
+                    noStroke();
+                    rect(-barWidth/2, 35, barWidth, barHeight, 3);
+
+                    // Health
+                    if (healthPercent > 0.6) fill(120, 200, 120);
+                    else if (healthPercent > 0.3) fill(220, 180, 80);
+                    else fill(220, 80, 80);
+                    rect(-barWidth/2, 35, barWidth * healthPercent, barHeight, 3);
+                }
+
+                // Name label
+                fill(0, this.alpha);
+                noStroke();
+                textAlign(CENTER, CENTER);
+                textSize(12);
+                textStyle(BOLD);
+                text(this.name, 0, -40);
+
+                // Winner crown
+                if (this.isWinner) {
+                    textSize(24);
+                    text('👑', 0, -60);
+                }
+
+                pop();
+
+                // Fade out eliminated
+                if (this.isEliminated) {
+                    this.alpha = max(0, this.alpha - 3);
+                }
+            }
+
+            takeDamage(amount) {
+                const actualDamage = amount * (1 - (this.defense - 1));
+                this.health = max(0, this.health - actualDamage);
+
+                // Screen shake effect
+                this.targetX = this.homeX + random(-10, 10);
+                this.targetY = this.homeY + random(-10, 10);
+
+                return this.health <= 0;
+            }
+
+            returnHome() {
+                this.targetX = this.homeX;
+                this.targetY = this.homeY;
+            }
+        }
+
+        class Fight {
+            constructor(attacker, defender) {
+                this.attacker = attacker;
+                this.defender = defender;
+                this.startTime = millis();
+                this.duration = 2000 / params.animSpeed;
+                this.damageDealt = false;
+
+                // Move fighters to center
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const offset = 80;
+
+                this.attacker.targetX = centerX - offset;
+                this.attacker.targetY = centerY;
+                this.defender.targetX = centerX + offset;
+                this.defender.targetY = centerY;
+            }
+
+            update() {
+                const elapsed = millis() - this.startTime;
+                const progress = elapsed / this.duration;
+
+                // Deal damage at halfway point
+                if (progress > 0.5 && !this.damageDealt) {
+                    this.damageDealt = true;
+                    const killed = this.defender.takeDamage(this.attacker.attackPower * params.intensity);
+
+                    if (killed) {
+                        this.defender.isEliminated = true;
+                        eliminated.push(this.defender);
+
+                        // Remove from active gladiators
+                        gladiators = gladiators.filter(g => g !== this.defender);
+                    }
+                }
+
+                // Fight is done
+                if (progress >= 1.0) {
+                    this.attacker.returnHome();
+                    if (!this.defender.isEliminated) {
+                        this.defender.returnHome();
+                    }
+                    return true;
+                }
+
+                return false;
+            }
+
+            draw() {
+                // Draw attack effects
+                if (this.damageDealt) {
+                    push();
+                    stroke(255, 100, 100, 150);
+                    strokeWeight(3);
+                    line(this.attacker.x, this.attacker.y, this.defender.x, this.defender.y);
+
+                    // Impact particles
+                    for (let i = 0; i < 5; i++) {
+                        const px = this.defender.x + random(-20, 20);
+                        const py = this.defender.y + random(-20, 20);
+                        fill(255, 200, 100, 200);
+                        noStroke();
+                        circle(px, py, random(5, 10));
+                    }
+                    pop();
+                }
+            }
+        }
+
+        let setupComplete = false;
+
+        function setup() {
+            let canvas = createCanvas(1200, 900);
+            canvas.parent('canvas-container');
+
+            // Wait for Electron to inject names
+            if (window.JULEKALENDER_NAMES && window.JULEKALENDER_NAMES.length > 0) {
+                initializeWithNames();
+            } else {
+                // Will be initialized when event fires
+            }
+        }
+
+        // Listen for name injection from Electron
+        window.addEventListener('julekalender-names-loaded', (event) => {
+            if (!setupComplete) {
+                initializeWithNames();
+            }
+        });
+
+        function initializeWithNames() {
+            if (setupComplete) return;
+
+            loadNames();
+
+            if (names.length === 0) {
+                console.error('No names loaded!');
+                return;
+            }
+
+            initializeAnimation();
+            document.querySelector('.loading').style.display = 'none';
+            setupComplete = true;
+        }
+
+        function initializeAnimation() {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+
+            // Pre-select winner
+            winner = random(names);
+            console.log(`Winner pre-selected: ${winner} (seed: ${params.seed})`);
+
+            // Create gladiators
+            gladiators = [];
+            eliminated = [];
+            names.forEach((name, i) => {
+                gladiators.push(new Gladiator(name, i, names.length));
+            });
+
+            currentFight = null;
+            phase = 'intro';
+            phaseStartTime = millis();
+            animationStartTime = millis();
+
+            background(250, 249, 245);
+        }
+
+        function draw() {
+            // Background with slight transparency for trail effect
+            background(250, 249, 245, 30);
+
+            const elapsed = (millis() - animationStartTime) / params.animSpeed;
+
+            // Draw arena
+            drawArena();
+
+            // Update and draw all gladiators
+            [...gladiators, ...eliminated].forEach(g => {
+                g.update();
+                g.draw();
+            });
+
+            // Phase management
+            if (phase === 'intro') {
+                // Show all gladiators for 3 seconds
+                if (elapsed > 3000) {
+                    phase = 'battle';
+                    phaseStartTime = millis();
+                }
+
+                drawPhaseText('LA KAMPEN BEGYNNE!');
+            }
+            else if (phase === 'battle') {
+                // Main battle phase
+                if (currentFight) {
+                    currentFight.draw();
+                    if (currentFight.update()) {
+                        currentFight = null;
+                    }
+                } else {
+                    // Start new fight if there are enough gladiators
+                    if (gladiators.length > 1) {
+                        // Slow down fights as we get to finals
+                        const waitTime = gladiators.length <= 3 ? 1500 : 800;
+                        if (millis() - phaseStartTime > waitTime / params.animSpeed) {
+                            startRandomFight();
+                            phaseStartTime = millis();
+                        }
+                    } else if (gladiators.length === 1) {
+                        phase = 'victory';
+                        phaseStartTime = millis();
+                        gladiators[0].isWinner = true;
+                    }
+                }
+            }
+            else if (phase === 'victory') {
+                // Victory celebration
+                const victoryElapsed = millis() - phaseStartTime;
+
+                if (victoryElapsed < 5000) {
+                    // Confetti!
+                    for (let i = 0; i < 3; i++) {
+                        const px = random(width);
+                        const py = random(height);
+                        fill(random(COLORS));
+                        noStroke();
+                        circle(px, py, random(5, 15));
+                    }
+
+                    drawPhaseText(`🎉 ${gladiators[0].name} SEIRER! 🎉`, 32);
+                } else {
+                    noLoop();
+                }
+            }
+
+            // Status display
+            drawStatus();
+        }
+
+        function drawArena() {
+            push();
+            noFill();
+            stroke(200, 180, 150);
+            strokeWeight(4);
+            const arenaRadius = min(width, height) * 0.4;
+            circle(width/2, height/2, arenaRadius * 2);
+
+            // Arena markings
+            stroke(220, 200, 180);
+            strokeWeight(1);
+            circle(width/2, height/2, arenaRadius * 1.5);
+            circle(width/2, height/2, arenaRadius * 0.5);
+            pop();
+        }
+
+        function drawPhaseText(txt, size = 24) {
+            push();
+            fill(0, 180);
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textSize(size);
+            textStyle(BOLD);
+            text(txt, width/2, 50);
+            pop();
+        }
+
+        function drawStatus() {
+            push();
+            fill(255, 255, 255, 200);
+            noStroke();
+            rect(10, height - 60, 200, 50, 8);
+
+            fill(0);
+            textAlign(LEFT, CENTER);
+            textSize(12);
+            text(`Aktive: ${gladiators.length}`, 20, height - 45);
+            text(`Eliminert: ${eliminated.length}`, 20, height - 25);
+            pop();
+        }
+
+        function startRandomFight() {
+            if (gladiators.length < 2) return;
+
+            // Pick random attacker and defender
+            const attacker = random(gladiators);
+            let defender = random(gladiators);
+
+            // Make sure they're different
+            while (defender === attacker && gladiators.length > 1) {
+                defender = random(gladiators);
+            }
+
+            // Bias towards keeping the winner alive longer
+            if (defender.name === winner && gladiators.length > 3) {
+                if (random() < 0.7) { // 70% chance to pick someone else
+                    const others = gladiators.filter(g => g !== attacker && g.name !== winner);
+                    if (others.length > 0) {
+                        defender = random(others);
+                    }
+                }
+            }
+
+            currentFight = new Fight(attacker, defender);
+        }
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(`${paramName}-value`).textContent =
+                paramName === 'animSpeed' ? `${value}x` : value;
+        }
+
+        function restartAnimation() {
+            initializeAnimation();
+            loop();
+        }
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                restartAnimation();
+            } else {
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            restartAnimation();
+        }
+
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+        });
+    </script>
+</body>
+</html>
